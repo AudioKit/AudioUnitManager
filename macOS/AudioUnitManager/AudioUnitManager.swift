@@ -38,6 +38,8 @@ class AudioUnitManager: NSViewController {
     @IBOutlet var auInstrumentSelector: NSPopUpButton!
     @IBOutlet var midiDeviceSelector: NSPopUpButton!
 
+    let engine = AKEngine()
+
     internal var lastMIDIEvent: Int = 0
     internal var audioTimer: Timer?
     internal var audioPlaying: Bool = false
@@ -98,7 +100,7 @@ class AudioUnitManager: NSViewController {
                                                name: Notification.Name("AudioUnitManager.handleApplicationInit"),
                                                object: nil)
         let mainOutput = AKMixer()
-        mixer.connect(to: mainOutput)
+        mainOutput.addInput(mixer)
         engine.output = mainOutput
 
         initManager()
@@ -107,9 +109,9 @@ class AudioUnitManager: NSViewController {
     }
 
     internal func startEngine(completionHandler: AKCallback? = nil) {
-        AKLog("* engine.isRunning: \(engine.isRunning)")
+        AKLog("* engine.isRunning: \(engine.avEngine.isRunning)")
 
-        if !engine.isRunning {
+        if !engine.avEngine.isRunning {
             do {
                 try engine.start()
             } catch {
@@ -303,11 +305,7 @@ extension AudioUnitManager: NSWindowDelegate {
         if let w = notification.object as? NSWindow {
             if w == view.window {
                 internalManager.reset()
-                do {
-                    try engine.stop()
-                } catch {
-                    AKLog("AudioKit did not stop!")
-                }
+                engine.stop()
                 exit(0)
             }
 

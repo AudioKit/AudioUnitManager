@@ -31,12 +31,12 @@ extension AudioUnitManager {
                 internalManager.connectEffects(firstNode: player, lastNode: mixer)
             }
             startEngine {
-                player.volume = 1
+//                player.volume = 1 // AOP no volume on player yet
                 player.play(from: self.waveform?.position ?? 0)
                 self.startAudioTimer()
             }
         } else {
-            if engine.isRunning {
+            if engine.avEngine.isRunning {
                 // just turns off reverb tails or delay lines etc
                 internalManager.reset()
             }
@@ -73,7 +73,7 @@ extension AudioUnitManager {
 
     /// open an audio URL for playing
     func open(url: URL) {
-        try? engine.stop()
+        engine.stop()
         handlePlay(state: false)
 
         if player == nil {
